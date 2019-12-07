@@ -206,7 +206,7 @@ def clausie(sent, conservative=True):
                     clause['XCOMP'].append(d.head)
                 else:
                     clause['O'].append(d)
-            elif d.dep_ in ['advmod', 'advcl']:
+            elif d.dep_ in ['advmod', 'advcl', 'npadvmod']:
                 clause['A'].append(d)
             elif d.dep_ in ['oprd'] and d.head in clause['V']:
                 clause['A'].append(d)
@@ -412,6 +412,8 @@ def extract_propositions(clauses):
                     append_conjugates(adverbs)
                     
                     for o in objects:
+                        
+                        
                         prop = {'subject': s,  'verb':v, 'direct object':o}
                         if prop not in propositions:
                             propositions.append(prop)
@@ -420,6 +422,16 @@ def extract_propositions(clauses):
                                 prop = {'subject': s,  'verb':v, 'direct object':o, 'adverb':a}
                                 if prop not in propositions:
                                     propositions.append(prop)                                
+                                    
+                        # Extractions of form: 
+                        # AE had a faboulous hairstyle -> Hairstyle was faboulous
+                        for c in o.children:
+                            if c.dep_ == 'amod':
+                                prop = {'subject': o, 'verb':[t for t in nlp('is')][0], 'complement':c}
+                                if prop not in propositions:
+                                    propositions.append(prop)
+
+                                    
                 elif type_ in ['SVA']:
                     adverbs = clause['A']
                     append_conjugates(adverbs)
@@ -600,6 +612,9 @@ if __name__ == "__main__":
             "A bull was feeding in a meadow until a lion approached the bull",
             "The attack of the lion caused the death of the bull.",
             "Some crows are eating rubbish at a garbage dump.",
+            "AE knocked the door three times.",
+            "All crows have a beak.",
+            "AE had a faboulous hairstyle.",
             ]
     
     for sent in sentences:
